@@ -1,7 +1,7 @@
 # Markdown Ultimate
 
-[![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/pierre.markdown-ultimate)](https://marketplace.visualstudio.com/items?itemName=pierre.markdown-ultimate)
-[![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/pierre.markdown-ultimate)](https://marketplace.visualstudio.com/items?itemName=pierre.markdown-ultimate)
+[![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/piwa.markdown-ultimate)](https://marketplace.visualstudio.com/items?itemName=piwa.markdown-ultimate)
+[![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/piwa.markdown-ultimate)](https://marketplace.visualstudio.com/items?itemName=piwa.markdown-ultimate)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **All-in-one markdown editor for VS Code** — toggle between source and rendered preview in the same tab, no split panes needed. Inspired by Cursor's inline preview.
@@ -30,7 +30,7 @@
 Or install from the command line:
 
 ```bash
-code --install-extension pierre.markdown-ultimate
+code --install-extension piwa.markdown-ultimate
 ```
 
 ## Usage
