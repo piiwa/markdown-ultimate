@@ -19,7 +19,7 @@
     "theme": "dark"
   },
   "engines": {
-    "vscode": "^1.80.0"
+    "vscode": "^1.85.0"
   },
   "categories": [
     "Other",
@@ -34,7 +34,8 @@
     "export",
     "pdf",
     "emoji",
-    "codemirror"
+    "codemirror",
+    "all-in-one"
   ],
   "main": "./dist/extension.js",
   "contributes": {

@@ -34,7 +34,7 @@ const isDark =
 mermaid.initialize({
   startOnLoad: false,
   theme: isDark ? "dark" : "default",
-  securityLevel: "loose",
+  securityLevel: "strict",
 });
 
 // --- markdown-it with plugins ---

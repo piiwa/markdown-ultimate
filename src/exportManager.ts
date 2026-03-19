@@ -223,7 +223,7 @@ function buildHtml(markdownText: string, extensionUri?: vscode.Uri): string {
       vertical-align: middle;
     }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js" integrity="sha384-tI0sDqjGJcqrQ8e/XKiQGS+ee11v5knTNWx2goxMBxe4DO9U0uKlfxJtYB9ILZ4j" crossorigin="anonymous"></script>
   <script>mermaid.initialize({startOnLoad: true, theme: 'default'});</script>
 </head>
 <body>

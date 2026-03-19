@@ -4,7 +4,11 @@
 [![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/piwa.markdown-ultimate)](https://marketplace.visualstudio.com/items?itemName=piwa.markdown-ultimate)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**All-in-one markdown editor for VS Code** — toggle between source and rendered preview in the same tab, no split panes needed. Inspired by Cursor's inline preview.
+**The ultimate markdown editor for VS Code** — toggle between source and rendered preview in the same tab, no split panes needed.
+
+## Why Markdown Ultimate?
+
+Unlike VS Code's built-in preview that opens in a **separate tab**, Markdown Ultimate lets you switch between editing and preview **in the same tab** — just like Cursor. No split panes, no tab clutter. Plus it bundles everything you need: math rendering, diagrams, emoji, export, and keyboard shortcuts. **One extension to replace them all.**
 
 ## Features
 
