@@ -1,0 +1,179 @@
+{
+  "name": "markdown-ultimate",
+  "displayName": "Markdown Ultimate",
+  "description": "The ultimate markdown editor for VS Code — toggle source/preview in the same tab, KaTeX math, Mermaid diagrams, emoji, task lists, TOC, and export to HTML/PDF/PNG.",
+  "version": "0.1.0",
+  "publisher": "pierre",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/piiwa/markdown-ultimate"
+  },
+  "bugs": {
+    "url": "https://github.com/piiwa/markdown-ultimate/issues"
+  },
+  "homepage": "https://github.com/piiwa/markdown-ultimate#readme",
+  "icon": "media/icon.png",
+  "galleryBanner": {
+    "color": "#1e1e1e",
+    "theme": "dark"
+  },
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other",
+    "Visualization"
+  ],
+  "keywords": [
+    "markdown",
+    "preview",
+    "toggle",
+    "katex",
+    "mermaid",
+    "export",
+    "pdf",
+    "emoji",
+    "codemirror"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "customEditors": [
+      {
+        "viewType": "markdownToggle.editor",
+        "displayName": "Markdown Ultimate Editor",
+        "selector": [
+          {
+            "filenamePattern": "*.md"
+          },
+          {
+            "filenamePattern": "*.markdown"
+          }
+        ],
+        "priority": "default"
+      }
+    ],
+    "commands": [
+      {
+        "command": "markdownToggle.showPreview",
+        "title": "Show Preview",
+        "icon": "$(open-preview)"
+      },
+      {
+        "command": "markdownToggle.showSource",
+        "title": "Show Markdown Source",
+        "icon": "$(go-to-file)"
+      },
+      {
+        "command": "markdownToggle.toggleBold",
+        "title": "Markdown: Toggle Bold"
+      },
+      {
+        "command": "markdownToggle.toggleItalic",
+        "title": "Markdown: Toggle Italic"
+      },
+      {
+        "command": "markdownToggle.toggleStrikethrough",
+        "title": "Markdown: Toggle Strikethrough"
+      },
+      {
+        "command": "markdownToggle.headingUp",
+        "title": "Markdown: Increase Heading Level"
+      },
+      {
+        "command": "markdownToggle.headingDown",
+        "title": "Markdown: Decrease Heading Level"
+      },
+      {
+        "command": "markdownToggle.toggleCheckbox",
+        "title": "Markdown: Toggle Checkbox"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "markdownToggle.toggleBold",
+        "key": "ctrl+b",
+        "mac": "cmd+b",
+        "when": "markdownToggle.active && markdownToggle.mode == source"
+      },
+      {
+        "command": "markdownToggle.toggleItalic",
+        "key": "ctrl+i",
+        "mac": "cmd+i",
+        "when": "markdownToggle.active && markdownToggle.mode == source"
+      },
+      {
+        "command": "markdownToggle.toggleStrikethrough",
+        "key": "alt+s",
+        "when": "markdownToggle.active && markdownToggle.mode == source"
+      },
+      {
+        "command": "markdownToggle.headingUp",
+        "key": "ctrl+shift+]",
+        "mac": "cmd+shift+]",
+        "when": "markdownToggle.active && markdownToggle.mode == source"
+      },
+      {
+        "command": "markdownToggle.headingDown",
+        "key": "ctrl+shift+[",
+        "mac": "cmd+shift+[",
+        "when": "markdownToggle.active && markdownToggle.mode == source"
+      },
+      {
+        "command": "markdownToggle.toggleCheckbox",
+        "key": "alt+c",
+        "when": "markdownToggle.active && markdownToggle.mode == source"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "markdownToggle.showPreview",
+          "group": "navigation",
+          "when": "markdownToggle.active && markdownToggle.mode != preview"
+        },
+        {
+          "command": "markdownToggle.showSource",
+          "group": "navigation",
+          "when": "markdownToggle.active && markdownToggle.mode == preview"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "node esbuild.config.mjs",
+    "build": "node esbuild.config.mjs",
+    "watch": "node esbuild.config.mjs --watch",
+    "lint": "eslint src/",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\"",
+    "package": "npx @vscode/vsce package --no-dependencies"
+  },
+  "dependencies": {
+    "@codemirror/commands": "^6.8.0",
+    "@codemirror/lang-markdown": "^6.3.2",
+    "@codemirror/language": "^6.10.8",
+    "@codemirror/language-data": "^6.5.1",
+    "@codemirror/state": "^6.5.2",
+    "@codemirror/view": "^6.36.5",
+    "katex": "^0.16.38",
+    "markdown-it": "^14.1.0",
+    "markdown-it-anchor": "^9.2.0",
+    "markdown-it-emoji": "^3.0.0",
+    "markdown-it-task-lists": "^2.1.1",
+    "markdown-it-texmath": "^1.0.0",
+    "markdown-it-toc-done-right": "^4.2.0",
+    "mermaid": "^11.13.0",
+    "puppeteer-core": "^24.39.1"
+  },
+  "devDependencies": {
+    "@types/markdown-it": "^14.1.2",
+    "@types/vscode": "^1.80.0",
+    "esbuild": "^0.21.0",
+    "eslint": "^10.0.3",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.8.1",
+    "typescript": "^5.5.0",
+    "typescript-eslint": "^8.57.1"
+  }
+}

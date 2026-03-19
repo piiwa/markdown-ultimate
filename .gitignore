@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# pnpm
+pnpm-debug.log*
+
+# VSCode extension package
+*.vsix
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor directories
+.vscode/
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Example output files
+example.pdf
+example.png
+example_preview.html
+
+# Claude Code
+.claude/
