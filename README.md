@@ -2,13 +2,14 @@
 
 [![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/piwa.markdown-ultimate)](https://marketplace.visualstudio.com/items?itemName=piwa.markdown-ultimate)
 [![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/piwa.markdown-ultimate)](https://marketplace.visualstudio.com/items?itemName=piwa.markdown-ultimate)
+[![Open VSX Version](https://img.shields.io/open-vsx/v/piwa/markdown-ultimate)](https://open-vsx.org/extension/piwa/markdown-ultimate)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**The ultimate markdown editor for VS Code** — toggle between source and rendered preview in the same tab, no split panes needed.
+**The ultimate all-in-one markdown editor for VS Code, Cursor, Windsurf & compatible editors** — toggle between source and rendered preview in the same tab, no split panes needed.
 
 ## Why Markdown Ultimate?
 
-Unlike VS Code's built-in preview that opens in a **separate tab**, Markdown Ultimate lets you switch between editing and preview **in the same tab** — just like Cursor. No split panes, no tab clutter. Plus it bundles everything you need: math rendering, diagrams, emoji, export, and keyboard shortcuts. **One extension to replace them all.**
+Unlike VS Code's built-in preview that opens in a **separate tab**, Markdown Ultimate lets you switch between editing and preview **in the same tab** — just like Cursor's native toggle. No split panes, no tab clutter. Plus it bundles everything you need: math rendering, diagrams, emoji, export, and keyboard shortcuts. **One extension to replace them all.**
 
 ## Features
 
@@ -26,15 +27,20 @@ Unlike VS Code's built-in preview that opens in a **separate tab**, Markdown Ult
 
 ## Installation
 
-1. Open VS Code
-2. Go to Extensions (`Cmd+Shift+X` / `Ctrl+Shift+X`)
-3. Search for **"Markdown Ultimate"**
-4. Click **Install**
-
-Or install from the command line:
+### VS Code
+1. Open Extensions (`Cmd+Shift+X` / `Ctrl+Shift+X`)
+2. Search for **"Markdown Ultimate"**
+3. Click **Install**
 
 ```bash
 code --install-extension piwa.markdown-ultimate
+```
+
+### Cursor / Windsurf / VSCodium
+Install from [Open VSX Registry](https://open-vsx.org/extension/piwa/markdown-ultimate), or:
+
+```bash
+cursor --install-extension piwa.markdown-ultimate
 ```
 
 ## Usage

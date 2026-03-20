@@ -2,7 +2,7 @@
   "name": "markdown-ultimate",
   "displayName": "Markdown Ultimate",
   "description": "The ultimate markdown editor for VS Code — toggle source/preview in the same tab, KaTeX math, Mermaid diagrams, emoji, task lists, TOC, and export to HTML/PDF/PNG.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "piwa",
   "license": "MIT",
   "repository": {
@@ -22,20 +22,20 @@
     "vscode": "^1.85.0"
   },
   "categories": [
-    "Other",
+    "Programming Languages",
+    "Formatters",
     "Visualization"
   ],
   "keywords": [
     "markdown",
     "preview",
-    "toggle",
-    "katex",
     "mermaid",
-    "export",
-    "pdf",
-    "emoji",
-    "codemirror",
-    "all-in-one"
+    "katex",
+    "pdf"
+  ],
+  "extensionKind": [
+    "ui",
+    "workspace"
   ],
   "main": "./dist/extension.js",
   "contributes": {
