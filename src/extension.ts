@@ -15,6 +15,12 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand("markdownToggle.showSource", () => {
       provider.switchMode("source");
     }),
+    vscode.commands.registerCommand("markdownToggle.openWith", () => {
+      const uri = vscode.window.activeTextEditor?.document.uri;
+      if (uri) {
+        vscode.commands.executeCommand("vscode.openWith", uri, MarkdownEditorProvider.viewType);
+      }
+    }),
     ...[
       "toggleBold",
       "toggleItalic",

@@ -20,9 +20,13 @@ Thumbs.db
 # TypeScript build info
 *.tsbuildinfo
 
+# Environment files
+.env*
+
 # Example output files
 example.pdf
 example.png
+example.html
 example_preview.html
 
 # Claude Code

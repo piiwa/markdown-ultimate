@@ -97,7 +97,7 @@ Direct PDF and PNG export require Google Chrome or Chromium installed on your sy
 
 ## Requirements
 
-- VS Code 1.80.0 or later
+- VS Code 1.85.0 or later
 - Chrome/Chromium (optional, for direct PDF/PNG export only)
 
 ## License

@@ -2,7 +2,7 @@
   "name": "markdown-ultimate",
   "displayName": "Markdown Ultimate",
   "description": "The ultimate markdown editor for VS Code — toggle source/preview in the same tab, KaTeX math, Mermaid diagrams, emoji, task lists, TOC, and export to HTML/PDF/PNG.",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "publisher": "piwa",
   "license": "MIT",
   "repository": {
@@ -31,7 +31,15 @@
     "preview",
     "mermaid",
     "katex",
-    "pdf"
+    "pdf",
+    "all-in-one",
+    "editor",
+    "export",
+    "latex",
+    "toggle"
+  ],
+  "activationEvents": [
+    "onCustomEditor:markdownToggle.editor"
   ],
   "extensionKind": [
     "ui",
@@ -88,6 +96,10 @@
       {
         "command": "markdownToggle.toggleCheckbox",
         "title": "Markdown: Toggle Checkbox"
+      },
+      {
+        "command": "markdownToggle.openWith",
+        "title": "Markdown Ultimate: Open With This Editor"
       }
     ],
     "keybindings": [
@@ -126,6 +138,12 @@
         "when": "markdownToggle.active && markdownToggle.mode == source"
       }
     ],
+    "configurationDefaults": {
+      "workbench.editorAssociations": {
+        "*.md": "markdownToggle.editor",
+        "*.markdown": "markdownToggle.editor"
+      }
+    },
     "menus": {
       "editor/title": [
         {
