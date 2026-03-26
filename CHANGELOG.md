@@ -2,6 +2,16 @@
 
 ## [0.3.0] - 2026-03-26
 
+### Added
+
+- **Editor: search & replace** — Cmd+F / Ctrl+F now opens CodeMirror's built-in search panel (VS Code's native search cannot reach custom editor webviews)
+- **Editor: fold/unfold** — fold gutter + Cmd+Shift+[ / ] to collapse/expand sections
+- **Editor: multi-cursor** — rectangular selection via Alt+click drag
+- **Editor: bracket matching & auto-close** — highlights matching brackets, auto-closes `(`, `[`, `{`, etc.
+- **Editor: active line highlight** — current line and its gutter are visually highlighted
+- **Editor: indent with Tab** — Tab / Shift+Tab for indentation
+- **Pre-commit hooks** — Husky + lint-staged ensures ESLint and Prettier run on every commit
+
 ### Fixed
 
 - **PDF export: double margins** — removed redundant CSS padding on `.markdown-body` that stacked with Puppeteer margins, causing ~28mm effective margins instead of 15mm

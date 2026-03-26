@@ -319,18 +319,18 @@ async function exportPdfDirect(
 
     const html = buildHtml(document.getText(), extensionUri);
     const baseUrl = "file://" + path.dirname(document.uri.fsPath) + "/";
-    await page.setContent(
-      html.replace("<head>", `<head><base href="${baseUrl}">`),
-      { waitUntil: "networkidle0" }
-    );
+    await page.setContent(html.replace("<head>", `<head><base href="${baseUrl}">`), {
+      waitUntil: "networkidle0",
+    });
 
     // Wait for Mermaid diagrams to finish rendering
     const hasMermaid = html.includes('class="mermaid"');
     if (hasMermaid) {
-      await page.waitForFunction(
-        () => document.body.getAttribute("data-mermaid-done") === "true",
-        { timeout: 10000 }
-      ).catch(() => {});
+      await page
+        .waitForFunction(() => document.body.getAttribute("data-mermaid-done") === "true", {
+          timeout: 10000,
+        })
+        .catch(() => {});
     }
 
     const pdfPath = document.uri.fsPath.replace(/\.md$/i, ".pdf");
@@ -366,18 +366,18 @@ async function exportPng(
 
     const html = buildHtml(document.getText(), extensionUri);
     const baseUrl = "file://" + path.dirname(document.uri.fsPath) + "/";
-    await page.setContent(
-      html.replace("<head>", `<head><base href="${baseUrl}">`),
-      { waitUntil: "networkidle0" }
-    );
+    await page.setContent(html.replace("<head>", `<head><base href="${baseUrl}">`), {
+      waitUntil: "networkidle0",
+    });
 
     // Wait for Mermaid diagrams to finish rendering
     const hasMermaid = html.includes('class="mermaid"');
     if (hasMermaid) {
-      await page.waitForFunction(
-        () => document.body.getAttribute("data-mermaid-done") === "true",
-        { timeout: 10000 }
-      ).catch(() => {});
+      await page
+        .waitForFunction(() => document.body.getAttribute("data-mermaid-done") === "true", {
+          timeout: 10000,
+        })
+        .catch(() => {});
     }
 
     const pngPath = document.uri.fsPath.replace(/\.md$/i, ".png");

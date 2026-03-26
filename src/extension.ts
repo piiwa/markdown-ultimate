@@ -74,11 +74,7 @@ export function activate(context: vscode.ExtensionContext) {
       vscode.commands
         .executeCommand("workbench.action.closeActiveEditor")
         .then(() =>
-          vscode.commands.executeCommand(
-            "vscode.openWith",
-            uri,
-            MarkdownEditorProvider.viewType
-          )
+          vscode.commands.executeCommand("vscode.openWith", uri, MarkdownEditorProvider.viewType)
         )
         .then(
           () => reopening.delete(key),
