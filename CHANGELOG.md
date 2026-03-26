@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.3.0] - 2026-03-26
+
+### Fixed
+
+- **PDF export: double margins** — removed redundant CSS padding on `.markdown-body` that stacked with Puppeteer margins, causing ~28mm effective margins instead of 15mm
+- **PDF export: content cut across pages** — added `@media print` rules with `page-break-inside: avoid` on code blocks, tables, images, blockquotes, and Mermaid diagrams; `page-break-after: avoid` on headings; `orphans: 3` / `widows: 3` on paragraphs
+- **PDF/PNG export: local images not loading** — inject `<base href>` tag pointing to the markdown file's directory so relative image paths resolve
+- **PDF/PNG export: Mermaid diagrams not rendered** — replaced `startOnLoad` with explicit `mermaid.run()` + `waitForFunction` to ensure SVG rendering completes before capture
+- **PDF/PNG export: inconsistent layout** — set `page.setViewport({ width: 1200 })` instead of relying on Puppeteer's 800x600 default
+- **Mermaid CDN: fragile SRI hash** — pinned version to `mermaid@11.4.1` and removed integrity hash that broke on CDN updates
+- **Custom editor not activating from extensions** — markdown files opened programmatically by other extensions (Claude Code, GitLens, etc.) via `showTextDocument()` now automatically reopen with Markdown Ultimate
+
+### Changed
+
+- PDF margins reduced from 20mm to 15mm for better content-to-page ratio
+- First heading no longer has unnecessary top margin in exports
+- External links in PDF now show their URL in parentheses after the link text
+
 ## [0.2.0] - 2026-03-22
 
 ### Added

@@ -117,9 +117,8 @@ function buildHtml(markdownText: string, extensionUri?: vscode.Uri): string {
       padding: 0;
     }
     .markdown-body {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 24px 32px;
+      margin: 0;
+      padding: 0;
       word-wrap: break-word;
     }
     /* Headings */
@@ -130,6 +129,11 @@ function buildHtml(markdownText: string, extensionUri?: vscode.Uri): string {
       font-weight: 600;
       line-height: 1.25;
       color: #24292e;
+    }
+    .markdown-body h1:first-child,
+    .markdown-body h2:first-child,
+    .markdown-body h3:first-child {
+      margin-top: 0;
     }
     .markdown-body h1 {
       font-size: 2em;
@@ -222,9 +226,50 @@ function buildHtml(markdownText: string, extensionUri?: vscode.Uri): string {
       margin-right: 0.5em;
       vertical-align: middle;
     }
+
+    /* ========== Print / PDF styles ========== */
+    @media print {
+      body { background: #fff; }
+      .markdown-body pre,
+      .markdown-body code,
+      .markdown-body blockquote,
+      .markdown-body table,
+      .markdown-body img,
+      .markdown-body .mermaid {
+        page-break-inside: avoid;
+      }
+      .markdown-body h1,
+      .markdown-body h2,
+      .markdown-body h3,
+      .markdown-body h4,
+      .markdown-body h5,
+      .markdown-body h6 {
+        page-break-after: avoid;
+        page-break-inside: avoid;
+      }
+      .markdown-body p {
+        orphans: 3;
+        widows: 3;
+      }
+      .markdown-body tr {
+        page-break-inside: avoid;
+      }
+      .markdown-body a { color: #0366d6; }
+      .markdown-body a[href^="http"]::after {
+        content: " (" attr(href) ")";
+        font-size: 0.85em;
+        color: #6a737d;
+      }
+    }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js" integrity="sha384-tI0sDqjGJcqrQ8e/XKiQGS+ee11v5knTNWx2goxMBxe4DO9U0uKlfxJtYB9ILZ4j" crossorigin="anonymous"></script>
-  <script>mermaid.initialize({startOnLoad: true, theme: 'default'});</script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js" crossorigin="anonymous"></script>
+  <script>
+    mermaid.initialize({startOnLoad: false, theme: 'default'});
+    document.addEventListener('DOMContentLoaded', async () => {
+      await mermaid.run();
+      document.body.setAttribute('data-mermaid-done', 'true');
+    });
+  </script>
 </head>
 <body>
   <article class="markdown-body">
@@ -270,15 +315,29 @@ async function exportPdfDirect(
       args: ["--no-sandbox"],
     });
     const page = await browser.newPage();
+    await page.setViewport({ width: 1200, height: 800 });
 
     const html = buildHtml(document.getText(), extensionUri);
-    await page.setContent(html, { waitUntil: "networkidle0" });
+    const baseUrl = "file://" + path.dirname(document.uri.fsPath) + "/";
+    await page.setContent(
+      html.replace("<head>", `<head><base href="${baseUrl}">`),
+      { waitUntil: "networkidle0" }
+    );
+
+    // Wait for Mermaid diagrams to finish rendering
+    const hasMermaid = html.includes('class="mermaid"');
+    if (hasMermaid) {
+      await page.waitForFunction(
+        () => document.body.getAttribute("data-mermaid-done") === "true",
+        { timeout: 10000 }
+      ).catch(() => {});
+    }
 
     const pdfPath = document.uri.fsPath.replace(/\.md$/i, ".pdf");
     await page.pdf({
       path: pdfPath,
       format: "A4",
-      margin: { top: "20mm", right: "20mm", bottom: "20mm", left: "20mm" },
+      margin: { top: "15mm", right: "15mm", bottom: "15mm", left: "15mm" },
       printBackground: true,
     });
 
@@ -303,9 +362,23 @@ async function exportPng(
       args: ["--no-sandbox"],
     });
     const page = await browser.newPage();
+    await page.setViewport({ width: 1200, height: 800 });
 
     const html = buildHtml(document.getText(), extensionUri);
-    await page.setContent(html, { waitUntil: "networkidle0" });
+    const baseUrl = "file://" + path.dirname(document.uri.fsPath) + "/";
+    await page.setContent(
+      html.replace("<head>", `<head><base href="${baseUrl}">`),
+      { waitUntil: "networkidle0" }
+    );
+
+    // Wait for Mermaid diagrams to finish rendering
+    const hasMermaid = html.includes('class="mermaid"');
+    if (hasMermaid) {
+      await page.waitForFunction(
+        () => document.body.getAttribute("data-mermaid-done") === "true",
+        { timeout: 10000 }
+      ).catch(() => {});
+    }
 
     const pngPath = document.uri.fsPath.replace(/\.md$/i, ".png");
     await page.screenshot({ path: pngPath, fullPage: true });
