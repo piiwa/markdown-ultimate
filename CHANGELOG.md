@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.3.0] - 2026-03-26
+## [0.3.1] - 2026-03-26
 
 ### Added
 
@@ -11,6 +11,8 @@
 - **Editor: active line highlight** — current line and its gutter are visually highlighted
 - **Editor: indent with Tab** — Tab / Shift+Tab for indentation
 - **Pre-commit hooks** — Husky + lint-staged ensures ESLint and Prettier run on every commit
+
+## [0.3.0] - 2026-03-26
 
 ### Fixed
 
