@@ -1,6 +1,9 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
+import * as os from "os";
+import { pathToFileURL } from "url";
+import { getExportPath } from "./exportPath";
 import MarkdownIt from "markdown-it";
 import { full as markdownItEmoji } from "markdown-it-emoji";
 import markdownItTaskLists from "markdown-it-task-lists";
@@ -31,13 +34,13 @@ export async function showExportMenu(document: vscode.TextDocument, extensionUri
   const options: vscode.QuickPickItem[] = [
     {
       label: "$(file-code) HTML (standalone)",
-      description: "Fichier HTML complet avec styles intégrés",
-      detail: "Ouvrable dans n'importe quel navigateur",
+      description: "Complete HTML file with embedded styles",
+      detail: "Viewable in any browser",
     },
     {
-      label: "$(browser) PDF (via navigateur)",
-      description: "Ouvre le HTML dans votre navigateur",
-      detail: 'Utilisez Cmd+P / Ctrl+P → "Save as PDF"',
+      label: "$(browser) PDF (via browser)",
+      description: "Opens the HTML in your browser",
+      detail: 'Use Cmd+P / Ctrl+P → "Save as PDF"',
     },
   ];
 
@@ -47,43 +50,43 @@ export async function showExportMenu(document: vscode.TextDocument, extensionUri
     options.push(
       {
         label: "$(file-pdf) PDF (direct)",
-        description: "Génère un PDF directement",
-        detail: `Via Chrome détecté: ${path.basename(chromePath)}`,
+        description: "Generates a PDF directly",
+        detail: `Via detected Chrome: ${path.basename(chromePath)}`,
       },
       {
         label: "$(file-media) PNG (capture)",
-        description: "Capture une image du document rendu",
-        detail: `Via Chrome détecté: ${path.basename(chromePath)}`,
+        description: "Captures an image of the rendered document",
+        detail: `Via detected Chrome: ${path.basename(chromePath)}`,
       }
     );
   } else {
     options.push({
-      label: "$(file-pdf) PDF (direct) — Chrome requis",
-      description: "Chrome/Chromium non détecté",
-      detail: "Installez Chrome ou configurez markdownToggle.chromePath",
+      label: "$(file-pdf) PDF (direct) — Chrome required",
+      description: "Chrome/Chromium not detected",
+      detail: "Install Chrome or set markdownToggle.chromePath",
     });
   }
 
   const selected = await vscode.window.showQuickPick(options, {
-    placeHolder: "Choisir le format d'export",
+    placeHolder: "Choose the export format",
   });
 
   if (!selected) return;
 
   const label = selected.label;
 
-  if (label.includes("HTML")) {
+  if (label.includes("Chrome required")) {
+    vscode.window.showWarningMessage(
+      "Chrome/Chromium was not detected. Install Chrome or set the markdownToggle.chromePath setting."
+    );
+  } else if (label.includes("HTML")) {
     await exportHtml(document, extensionUri);
-  } else if (label.includes("PDF (via navigateur)")) {
+  } else if (label.includes("PDF (via browser)")) {
     await exportPdfViaBrowser(document, extensionUri);
   } else if (label.includes("PDF (direct)") && chromePath) {
     await exportPdfDirect(document, chromePath, extensionUri);
   } else if (label.includes("PNG") && chromePath) {
     await exportPng(document, chromePath, extensionUri);
-  } else if (label.includes("Chrome requis")) {
-    vscode.window.showWarningMessage(
-      "Chrome/Chromium n'est pas détecté. Installez Chrome ou configurez le setting markdownToggle.chromePath."
-    );
   }
 }
 
@@ -279,53 +282,70 @@ function buildHtml(markdownText: string, extensionUri?: vscode.Uri): string {
 </html>`;
 }
 
-async function exportHtml(document: vscode.TextDocument, extensionUri?: vscode.Uri) {
-  const html = buildHtml(document.getText(), extensionUri);
-  const mdPath = document.uri.fsPath;
-  const htmlPath = mdPath.replace(/\.md$/i, ".html");
+async function exportHtml(doc: vscode.TextDocument, extensionUri?: vscode.Uri) {
+  const html = buildHtml(doc.getText(), extensionUri);
+  const htmlPath = getExportPath(doc.uri.fsPath, "html");
 
-  fs.writeFileSync(htmlPath, html, "utf-8");
+  try {
+    fs.writeFileSync(htmlPath, html, "utf-8");
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    vscode.window.showErrorMessage(`HTML export failed: ${message}`);
+    return;
+  }
   const htmlDoc = await vscode.workspace.openTextDocument(htmlPath);
   await vscode.window.showTextDocument(htmlDoc);
   vscode.window.showInformationMessage(`Exported to ${path.basename(htmlPath)}`);
 }
 
-async function exportPdfViaBrowser(document: vscode.TextDocument, extensionUri?: vscode.Uri) {
-  const html = buildHtml(document.getText(), extensionUri);
-  const mdPath = document.uri.fsPath;
-  const tmpHtmlPath = mdPath.replace(/\.md$/i, "_preview.html");
+async function exportPdfViaBrowser(doc: vscode.TextDocument, extensionUri?: vscode.Uri) {
+  const html = buildHtml(doc.getText(), extensionUri);
+  // Written to the OS temp dir (not next to the source) so it never litters the
+  // workspace. Relative images may not resolve on this manual fallback path;
+  // use the direct PDF export for documents with local images.
+  const base = path.basename(getExportPath(doc.uri.fsPath, "html"));
+  const tmpHtmlPath = path.join(os.tmpdir(), `md-ultimate-${Date.now()}-${base}`);
 
-  fs.writeFileSync(tmpHtmlPath, html, "utf-8");
+  try {
+    fs.writeFileSync(tmpHtmlPath, html, "utf-8");
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    vscode.window.showErrorMessage(`PDF export failed: ${message}`);
+    return;
+  }
   await vscode.env.openExternal(vscode.Uri.file(tmpHtmlPath));
   vscode.window.showInformationMessage(
-    'Le fichier s\'ouvre dans votre navigateur. Utilisez Cmd+P / Ctrl+P → "Save as PDF".'
+    'The file is opening in your browser. Use Cmd+P / Ctrl+P → "Save as PDF".'
   );
 }
 
-async function exportPdfDirect(
-  document: vscode.TextDocument,
+/**
+ * Renders the document with headless Chrome and runs `job(page)` to produce the
+ * output. The temp HTML lives next to the source so relative images resolve,
+ * and is navigated via a real file:// URL; the browser and temp file are always
+ * released, even on error (the previous code leaked both).
+ */
+async function renderWithChrome(
+  doc: vscode.TextDocument,
   chromePath: string,
-  extensionUri?: vscode.Uri
-) {
+  extensionUri: vscode.Uri | undefined,
+  job: (page: import("puppeteer-core").Page) => Promise<void>
+): Promise<void> {
+  const html = buildHtml(doc.getText(), extensionUri);
+  const tmpHtmlPath = path.join(
+    path.dirname(doc.uri.fsPath),
+    `.md-ultimate-${Date.now()}.tmp.html`
+  );
+  let browser: import("puppeteer-core").Browser | undefined;
   try {
+    fs.writeFileSync(tmpHtmlPath, html, "utf-8");
     const puppeteer = await import("puppeteer-core");
-    const browser = await puppeteer.launch({
-      executablePath: chromePath,
-      headless: true,
-      args: ["--no-sandbox"],
-    });
+    browser = await puppeteer.launch({ executablePath: chromePath, headless: true });
     const page = await browser.newPage();
     await page.setViewport({ width: 1200, height: 800 });
+    await page.goto(pathToFileURL(tmpHtmlPath).href, { waitUntil: "networkidle0" });
 
-    const html = buildHtml(document.getText(), extensionUri);
-    const baseUrl = "file://" + path.dirname(document.uri.fsPath) + "/";
-    await page.setContent(html.replace("<head>", `<head><base href="${baseUrl}">`), {
-      waitUntil: "networkidle0",
-    });
-
-    // Wait for Mermaid diagrams to finish rendering
-    const hasMermaid = html.includes('class="mermaid"');
-    if (hasMermaid) {
+    if (html.includes('class="mermaid"')) {
       await page
         .waitForFunction(() => document.body.getAttribute("data-mermaid-done") === "true", {
           timeout: 10000,
@@ -333,15 +353,28 @@ async function exportPdfDirect(
         .catch(() => {});
     }
 
-    const pdfPath = document.uri.fsPath.replace(/\.md$/i, ".pdf");
-    await page.pdf({
-      path: pdfPath,
-      format: "A4",
-      margin: { top: "15mm", right: "15mm", bottom: "15mm", left: "15mm" },
-      printBackground: true,
-    });
+    await job(page);
+  } finally {
+    await browser?.close().catch(() => {});
+    fs.rm(tmpHtmlPath, { force: true }, () => {});
+  }
+}
 
-    await browser.close();
+async function exportPdfDirect(
+  doc: vscode.TextDocument,
+  chromePath: string,
+  extensionUri?: vscode.Uri
+) {
+  const pdfPath = getExportPath(doc.uri.fsPath, "pdf");
+  try {
+    await renderWithChrome(doc, chromePath, extensionUri, async (page) => {
+      await page.pdf({
+        path: pdfPath,
+        format: "A4",
+        margin: { top: "15mm", right: "15mm", bottom: "15mm", left: "15mm" },
+        printBackground: true,
+      });
+    });
     vscode.window.showInformationMessage(`PDF exported to ${path.basename(pdfPath)}`);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
@@ -349,41 +382,12 @@ async function exportPdfDirect(
   }
 }
 
-async function exportPng(
-  document: vscode.TextDocument,
-  chromePath: string,
-  extensionUri?: vscode.Uri
-) {
+async function exportPng(doc: vscode.TextDocument, chromePath: string, extensionUri?: vscode.Uri) {
+  const pngPath = getExportPath(doc.uri.fsPath, "png");
   try {
-    const puppeteer = await import("puppeteer-core");
-    const browser = await puppeteer.launch({
-      executablePath: chromePath,
-      headless: true,
-      args: ["--no-sandbox"],
+    await renderWithChrome(doc, chromePath, extensionUri, async (page) => {
+      await page.screenshot({ path: pngPath, fullPage: true });
     });
-    const page = await browser.newPage();
-    await page.setViewport({ width: 1200, height: 800 });
-
-    const html = buildHtml(document.getText(), extensionUri);
-    const baseUrl = "file://" + path.dirname(document.uri.fsPath) + "/";
-    await page.setContent(html.replace("<head>", `<head><base href="${baseUrl}">`), {
-      waitUntil: "networkidle0",
-    });
-
-    // Wait for Mermaid diagrams to finish rendering
-    const hasMermaid = html.includes('class="mermaid"');
-    if (hasMermaid) {
-      await page
-        .waitForFunction(() => document.body.getAttribute("data-mermaid-done") === "true", {
-          timeout: 10000,
-        })
-        .catch(() => {});
-    }
-
-    const pngPath = document.uri.fsPath.replace(/\.md$/i, ".png");
-    await page.screenshot({ path: pngPath, fullPage: true });
-
-    await browser.close();
     vscode.window.showInformationMessage(`PNG exported to ${path.basename(pngPath)}`);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);

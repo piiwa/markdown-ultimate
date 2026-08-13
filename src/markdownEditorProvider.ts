@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { getWebviewHtml } from "./webviewContent";
 import { showExportMenu } from "./exportManager";
+import { normalizeMode } from "./mode";
 
 export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
   public static readonly viewType = "markdownToggle.editor";
@@ -39,7 +40,10 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
     // Track active panel and document
     this.activePanel = webviewPanel;
     this.activeDocument = document;
-    vscode.commands.executeCommand("setContext", "markdownToggle.mode", "source");
+    const initialMode = normalizeMode(
+      vscode.workspace.getConfiguration("markdownToggle").get("defaultMode")
+    );
+    vscode.commands.executeCommand("setContext", "markdownToggle.mode", initialMode);
     vscode.commands.executeCommand("setContext", "markdownToggle.active", true);
 
     webviewPanel.webview.options = {
@@ -65,7 +69,8 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
       document.getText(),
       editorJsUri,
       cssUri,
-      katexCssUri
+      katexCssUri,
+      initialMode
     );
 
     // Track which panel is active

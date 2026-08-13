@@ -1,5 +1,46 @@
 # Changelog
 
+All notable changes to this project are documented here. The format is based on
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres
+to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.4.0] - 2026-08-13
+
+### Fixed
+
+- **Data loss: exporting a `.markdown` file overwrote the source.** All export
+  paths derived the output name with a `.md`-only regex, so for `.markdown`
+  files the destination resolved to the source itself and the export destroyed
+  the document. Now computed from the real extension and guaranteed never to
+  equal the source. Covered by unit tests.
+- **Data loss: a document containing `</script>` could wipe the file.** The
+  initial text was embedded in an inline `<script>` without escaping `<`, so the
+  HTML parser closed the script early, the editor opened empty, and the first
+  keystroke replaced the whole document. The payload is now escaped. Covered by
+  unit tests.
+- **Export leaked a headless Chrome process** on any error; the browser and
+  temporary file are now always released.
+- **Relative images in direct PDF/PNG export** now resolve (navigating a real
+  `file://` URL instead of `setContent` + `<base>`).
+
+### Added
+
+- **Setting `markdownToggle.defaultMode`** — open markdown files directly in
+  Preview or Markdown (resolves #1).
+- **Search in preview mode** — Ctrl/Cmd+F in preview opens a find bar with match
+  count and next/previous navigation (resolves #2).
+- **Declared configuration** — `markdownToggle.chromePath` now appears in the
+  Settings UI (machine-scoped for safety), and the extension declares Workspace
+  Trust support so the export binary path is guarded in untrusted workspaces.
+- **Test suite** — vitest unit tests for the export path, bootstrap escaping,
+  mode resolution, and search matching, plus a `typecheck` gate.
+
+### Security
+
+- Removed `--no-sandbox` from the headless Chrome launch.
+- CSP nonce is now generated with a cryptographic RNG instead of `Math.random`.
+- Export UI strings translated to English.
+
 ## [0.3.1] - 2026-03-26
 
 ### Added

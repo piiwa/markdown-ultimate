@@ -1,14 +1,17 @@
 import * as vscode from "vscode";
+import { randomBytes } from "crypto";
+import { escapeInlineScript } from "./webviewBootstrap";
 
 export function getWebviewHtml(
   webview: vscode.Webview,
   initialText: string,
   editorJsUri: vscode.Uri,
   cssUri: vscode.Uri,
-  katexCssUri: vscode.Uri
+  katexCssUri: vscode.Uri,
+  initialMode: "source" | "preview" = "source"
 ): string {
   const nonce = getNonce();
-  const escapedText = JSON.stringify(initialText);
+  const escapedText = escapeInlineScript(initialText);
 
   return /* html */ `<!DOCTYPE html>
 <html lang="en">
@@ -23,18 +26,79 @@ export function getWebviewHtml(
              font-src ${webview.cspSource} data:;">
   <link rel="stylesheet" href="${katexCssUri}">
   <link rel="stylesheet" href="${cssUri}">
+  <style>
+    #find-bar {
+      position: fixed;
+      top: 8px;
+      right: 16px;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 6px;
+      background: var(--vscode-editorWidget-background, #252526);
+      color: var(--vscode-editorWidget-foreground, inherit);
+      border: 1px solid var(--vscode-editorWidget-border, #454545);
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+      font-size: 12px;
+    }
+    #find-input {
+      width: 180px;
+      padding: 3px 6px;
+      color: var(--vscode-input-foreground, inherit);
+      background: var(--vscode-input-background, #3c3c3c);
+      border: 1px solid var(--vscode-input-border, transparent);
+      border-radius: 2px;
+      outline: none;
+    }
+    #find-input:focus {
+      border-color: var(--vscode-focusBorder, #007fd4);
+    }
+    #find-count {
+      min-width: 44px;
+      text-align: center;
+      opacity: 0.8;
+      font-variant-numeric: tabular-nums;
+    }
+    #find-bar button {
+      padding: 2px 6px;
+      color: inherit;
+      background: transparent;
+      border: none;
+      border-radius: 2px;
+      cursor: pointer;
+      line-height: 1;
+    }
+    #find-bar button:hover {
+      background: var(--vscode-toolbar-hoverBackground, rgba(255, 255, 255, 0.1));
+    }
+    #preview::highlight(md-search) {
+      background-color: var(--vscode-editor-findMatchHighlightBackground, rgba(234, 92, 0, 0.33));
+    }
+    #preview::highlight(md-search-current) {
+      background-color: var(--vscode-editor-findMatchBackground, rgba(234, 92, 0, 0.66));
+    }
+  </style>
   <title>Markdown Editor</title>
 </head>
 <body>
   <div id="breadcrumb-bar">
     <div id="toggle-group">
-      <button id="btn-preview" class="toggle-tab">Preview</button>
-      <button id="btn-markdown" class="toggle-tab active">Markdown</button>
+      <button id="btn-preview" class="toggle-tab${initialMode === "preview" ? " active" : ""}">Preview</button>
+      <button id="btn-markdown" class="toggle-tab${initialMode === "source" ? " active" : ""}">Markdown</button>
       <span class="toggle-separator"></span>
       <button id="btn-export" class="toggle-tab toggle-icon" title="Export">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1L8 10M8 10L5 7M8 10L11 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M3 12L3 14L13 14L13 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
       </button>
     </div>
+  </div>
+  <div id="find-bar" style="display:none;">
+    <input id="find-input" type="text" placeholder="Find in preview" aria-label="Find in preview" />
+    <span id="find-count"></span>
+    <button id="find-prev" title="Previous match (Shift+Enter)" aria-label="Previous match">&#8593;</button>
+    <button id="find-next" title="Next match (Enter)" aria-label="Next match">&#8595;</button>
+    <button id="find-close" title="Close (Esc)" aria-label="Close find">&#10005;</button>
   </div>
   <div id="content-area">
     <div id="source"></div>
@@ -43,6 +107,7 @@ export function getWebviewHtml(
 
   <script nonce="${nonce}">
     window.__initialText = ${escapedText};
+    window.__initialMode = ${JSON.stringify(initialMode)};
   </script>
   <script nonce="${nonce}" src="${editorJsUri}"></script>
 </body>
@@ -50,10 +115,12 @@ export function getWebviewHtml(
 }
 
 function getNonce(): string {
-  let text = "";
+  // Cryptographically strong nonce — a predictable nonce would weaken the CSP.
   const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  for (let i = 0; i < 32; i++) {
-    text += possible.charAt(Math.floor(Math.random() * possible.length));
+  const bytes = randomBytes(32);
+  let text = "";
+  for (let i = 0; i < bytes.length; i++) {
+    text += possible.charAt(bytes[i] % possible.length);
   }
   return text;
 }

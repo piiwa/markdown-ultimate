@@ -1,9 +1,12 @@
 .vscode/**
 .github/**
 .claude/**
+.husky/**
+CONTRIBUTING.md
 src/**
 node_modules/**
 tsconfig.json
+vitest.config.ts
 esbuild.config.mjs
 eslint.config.*
 .eslintrc.*

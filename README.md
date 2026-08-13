@@ -21,6 +21,8 @@ Unlike VS Code's built-in preview that opens in a **separate tab**, Markdown Ult
 - **Task lists** — Interactive checkboxes with `- [x]` syntax
 - **Table of Contents** — Auto-generated TOC with `${toc}`
 - **Keyboard shortcuts** — Bold, italic, strikethrough, headings, checkboxes
+- **Find in preview** — `Cmd+F` / `Ctrl+F` searches the rendered preview, not just source
+- **Configurable default mode** — Open files straight into Preview or Markdown
 - **Export** — HTML, PDF (via browser or Chrome), PNG
 - **Scroll sync** — Preserves scroll position when toggling between modes
 - **Theme-aware** — Adapts to your VS Code light/dark theme
@@ -61,8 +63,18 @@ Use the **Preview** / **Markdown** buttons in the top-right corner of the editor
 | `Cmd+Shift+]` / `Ctrl+Shift+]` | Increase heading level |
 | `Cmd+Shift+[` / `Ctrl+Shift+[` | Decrease heading level |
 | `Alt+C` | Toggle checkbox |
+| `Cmd+F` / `Ctrl+F` | Find (works in **both** source and preview) |
 
-Shortcuts are only active in source editing mode.
+Editing shortcuts (bold, italic, headings, checkbox) are active in source mode.
+`Cmd+F` / `Ctrl+F` works in both modes: it opens CodeMirror's search in source
+and a find bar in preview.
+
+## Settings
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `markdownToggle.defaultMode` | `source` | Which mode a markdown file opens in (`source` or `preview`). |
+| `markdownToggle.chromePath` | _(auto-detect)_ | Absolute path to a Chrome/Chromium executable for direct PDF/PNG export. Machine-scoped. |
 
 ## Export
 
