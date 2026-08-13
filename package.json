@@ -233,7 +233,7 @@
   },
   "devDependencies": {
     "@types/markdown-it": "^14.1.2",
-    "@types/vscode": "^1.125.0",
+    "@types/vscode": "~1.85.0",
     "esbuild": "^0.21.5",
     "eslint": "^10.8.1",
     "eslint-config-prettier": "^10.1.8",
