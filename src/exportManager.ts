@@ -4,6 +4,7 @@ import * as fs from "fs";
 import * as os from "os";
 import { pathToFileURL } from "url";
 import { getExportPath } from "./exportPath";
+import { chromeCandidates } from "./chromeCandidates";
 import MarkdownIt from "markdown-it";
 import { full as markdownItEmoji } from "markdown-it-emoji";
 import markdownItTaskLists from "markdown-it-task-lists";
@@ -400,24 +401,5 @@ function findChrome(): string | undefined {
   const configPath = vscode.workspace.getConfiguration("markdownToggle").get<string>("chromePath");
   if (configPath && fs.existsSync(configPath)) return configPath;
 
-  const candidates =
-    process.platform === "darwin"
-      ? [
-          "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-          "/Applications/Chromium.app/Contents/MacOS/Chromium",
-          "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser",
-        ]
-      : process.platform === "win32"
-        ? [
-            "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
-            "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
-          ]
-        : [
-            "/usr/bin/google-chrome",
-            "/usr/bin/google-chrome-stable",
-            "/usr/bin/chromium-browser",
-            "/usr/bin/chromium",
-          ];
-
-  return candidates.find((p) => fs.existsSync(p));
+  return chromeCandidates(process.platform, process.env).find((p) => fs.existsSync(p));
 }
