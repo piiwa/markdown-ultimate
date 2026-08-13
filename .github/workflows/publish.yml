@@ -43,15 +43,26 @@ jobs:
       - run: pnpm build
       - run: npx @vscode/vsce package --no-dependencies
 
+      # Create the release (with the VSIX) BEFORE publishing, so a transient
+      # registry outage never blocks it. Idempotent: re-runs re-upload the asset.
+      - name: Create GitHub Release with the VSIX
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" *.vsix --title "$GITHUB_REF_NAME" --notes "See CHANGELOG.md for details." \
+            || gh release upload "$GITHUB_REF_NAME" *.vsix --clobber
+
       - name: Publish to VS Code Marketplace
         if: ${{ env.VSCE_PAT != '' }}
         run: npx @vscode/vsce publish --no-dependencies -p "$VSCE_PAT"
 
       - name: Publish to Open VSX
         if: ${{ env.OVSX_PAT != '' }}
-        run: npx ovsx publish *.vsix -p "$OVSX_PAT"
-
-      - name: Create GitHub Release with the VSIX
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" *.vsix --title "$GITHUB_REF_NAME" --notes "See CHANGELOG.md for details."
+        run: |
+          for attempt in 1 2 3; do
+            npx ovsx publish *.vsix -p "$OVSX_PAT" && exit 0
+            echo "Open VSX publish attempt $attempt failed; retrying in 30s..."
+            sleep 30
+          done
+          echo "::error::Open VSX publish failed after 3 attempts (often a transient 503). Re-run this job when the registry is back."
+          exit 1
