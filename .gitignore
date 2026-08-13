@@ -14,8 +14,10 @@ pnpm-debug.log*
 .DS_Store
 Thumbs.db
 
-# Editor directories
-.vscode/
+# Editor directories (but keep the shared launch config so F5 works on a clone)
+.vscode/*
+!.vscode/launch.json
+!.vscode/extensions.json
 
 # TypeScript build info
 *.tsbuildinfo
