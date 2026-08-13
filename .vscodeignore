@@ -1,6 +1,8 @@
 .vscode/**
 .github/**
 .claude/**
+.husky/**
+CONTRIBUTING.md
 src/**
 node_modules/**
 tsconfig.json
