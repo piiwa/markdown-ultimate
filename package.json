@@ -45,8 +45,41 @@
     "ui",
     "workspace"
   ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "Preview and editing work everywhere. Direct PDF/PNG export launches a browser binary, so the markdownToggle.chromePath setting is only honored in trusted workspaces.",
+      "restrictedConfigurations": [
+        "markdownToggle.chromePath"
+      ]
+    }
+  },
   "main": "./dist/extension.js",
   "contributes": {
+    "configuration": {
+      "title": "Markdown Ultimate",
+      "properties": {
+        "markdownToggle.defaultMode": {
+          "type": "string",
+          "enum": [
+            "source",
+            "preview"
+          ],
+          "enumDescriptions": [
+            "Open markdown files in the source editor",
+            "Open markdown files in the rendered preview"
+          ],
+          "default": "source",
+          "description": "Which mode a markdown file opens in."
+        },
+        "markdownToggle.chromePath": {
+          "type": "string",
+          "scope": "machine",
+          "default": "",
+          "markdownDescription": "Absolute path to a Chrome/Chromium executable used for direct PDF/PNG export. Leave empty to auto-detect. Machine-scoped for security: a workspace cannot override it."
+        }
+      }
+    },
     "customEditors": [
       {
         "viewType": "markdownToggle.editor",

@@ -42,6 +42,7 @@ declare function acquireVsCodeApi(): {
 declare global {
   interface Window {
     __initialText: string;
+    __initialMode?: "source" | "preview";
   }
 }
 
@@ -228,6 +229,11 @@ btnMarkdown.addEventListener("click", switchToSource);
 btnExport.addEventListener("click", () => {
   vscode.postMessage({ type: "export" });
 });
+
+// Honor the configured default mode (markdownToggle.defaultMode).
+if (window.__initialMode === "preview") {
+  switchToPreview();
+}
 
 // --- Editor actions (keyboard shortcuts) ---
 function wrapSelection(marker: string) {
