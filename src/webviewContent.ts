@@ -7,7 +7,8 @@ export function getWebviewHtml(
   initialText: string,
   editorJsUri: vscode.Uri,
   cssUri: vscode.Uri,
-  katexCssUri: vscode.Uri
+  katexCssUri: vscode.Uri,
+  initialMode: "source" | "preview" = "source"
 ): string {
   const nonce = getNonce();
   const escapedText = escapeInlineScript(initialText);
@@ -30,8 +31,8 @@ export function getWebviewHtml(
 <body>
   <div id="breadcrumb-bar">
     <div id="toggle-group">
-      <button id="btn-preview" class="toggle-tab">Preview</button>
-      <button id="btn-markdown" class="toggle-tab active">Markdown</button>
+      <button id="btn-preview" class="toggle-tab${initialMode === "preview" ? " active" : ""}">Preview</button>
+      <button id="btn-markdown" class="toggle-tab${initialMode === "source" ? " active" : ""}">Markdown</button>
       <span class="toggle-separator"></span>
       <button id="btn-export" class="toggle-tab toggle-icon" title="Export">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1L8 10M8 10L5 7M8 10L11 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M3 12L3 14L13 14L13 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
@@ -45,6 +46,7 @@ export function getWebviewHtml(
 
   <script nonce="${nonce}">
     window.__initialText = ${escapedText};
+    window.__initialMode = ${JSON.stringify(initialMode)};
   </script>
   <script nonce="${nonce}" src="${editorJsUri}"></script>
 </body>
