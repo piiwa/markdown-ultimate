@@ -4,6 +4,17 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1] - 2026-08-13
+
+### Security
+
+- Updated dependencies, cutting audited vulnerabilities from 50 to 6. Most
+  notably **mermaid → 11.16.1**, which fixes a prototype-pollution issue and
+  several XSS/DoS advisories in the diagram renderer (and updates the bundled
+  DOMPurify) — the webview-facing surface that actually processes untrusted
+  document content. The remaining advisories are all in dev-only tooling
+  (vitest/vite, puppeteer-core transitives) and never ship to users.
+
 ## [0.4.0] - 2026-08-13
 
 ### Fixed
