@@ -3,6 +3,7 @@
   "displayName": "Markdown Ultimate",
   "description": "The ultimate markdown editor for VS Code — toggle source/preview in the same tab, KaTeX math, Mermaid diagrams, emoji, task lists, TOC, and export to HTML/PDF/PNG.",
   "version": "0.4.1",
+  "packageManager": "pnpm@9.7.0",
   "publisher": "piwa",
   "license": "MIT",
   "repository": {
