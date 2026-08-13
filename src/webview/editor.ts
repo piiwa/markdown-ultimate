@@ -31,6 +31,7 @@ import markdownItTocDoneRight from "markdown-it-toc-done-right";
 import texmath from "markdown-it-texmath";
 import katex from "katex";
 import mermaid from "mermaid";
+import { findMatchRanges } from "../findMatches";
 // KaTeX CSS is loaded via webviewContent.ts as a <link> tag
 
 declare function acquireVsCodeApi(): {
@@ -42,6 +43,7 @@ declare function acquireVsCodeApi(): {
 declare global {
   interface Window {
     __initialText: string;
+    __initialMode?: "source" | "preview";
   }
 }
 
@@ -193,6 +195,124 @@ function restoreScrollPosition(target: "source" | "preview") {
   });
 }
 
+// --- Find in preview mode (Ctrl/Cmd+F) ---
+// Highlights matches with the CSS Custom Highlight API — it registers Ranges
+// over the existing text nodes and never mutates the DOM, so it cannot inject
+// markup. Source mode keeps using CodeMirror's own search.
+const findBar = document.getElementById("find-bar")!;
+const findInput = document.getElementById("find-input") as HTMLInputElement;
+const findCount = document.getElementById("find-count")!;
+const findPrev = document.getElementById("find-prev")!;
+const findNext = document.getElementById("find-next")!;
+const findClose = document.getElementById("find-close")!;
+
+// The Highlight API isn't in the TS DOM lib yet; access it through a typed shim.
+const cssHighlights = (CSS as unknown as { highlights?: Map<string, unknown> }).highlights;
+const HighlightCtor = (window as unknown as { Highlight?: new (...ranges: Range[]) => unknown })
+  .Highlight;
+const highlightApiAvailable = !!cssHighlights && !!HighlightCtor;
+
+let findMatches: Range[] = [];
+let findCurrent = -1;
+
+function clearFindHighlights() {
+  cssHighlights?.delete("md-search");
+  cssHighlights?.delete("md-search-current");
+}
+
+function updateFindCount() {
+  findCount.textContent = findMatches.length
+    ? `${findCurrent + 1}/${findMatches.length}`
+    : findInput.value
+      ? "0/0"
+      : "";
+}
+
+function focusCurrentMatch() {
+  const range = findMatches[findCurrent];
+  if (!range) return;
+  if (highlightApiAvailable && HighlightCtor) {
+    cssHighlights!.set("md-search-current", new HighlightCtor(range));
+  }
+  range.startContainer.parentElement?.scrollIntoView({ block: "center", behavior: "smooth" });
+  updateFindCount();
+}
+
+function runPreviewSearch() {
+  const query = findInput.value;
+  findMatches = [];
+  findCurrent = -1;
+  clearFindHighlights();
+
+  if (query) {
+    const walker = document.createTreeWalker(previewEl, NodeFilter.SHOW_TEXT);
+    let node = walker.nextNode();
+    while (node) {
+      for (const m of findMatchRanges(node.nodeValue ?? "", query)) {
+        const range = document.createRange();
+        range.setStart(node, m.start);
+        range.setEnd(node, m.end);
+        findMatches.push(range);
+      }
+      node = walker.nextNode();
+    }
+  }
+
+  if (findMatches.length > 0) {
+    findCurrent = 0;
+    if (highlightApiAvailable && HighlightCtor) {
+      cssHighlights!.set("md-search", new HighlightCtor(...findMatches));
+    }
+    focusCurrentMatch();
+  }
+  updateFindCount();
+}
+
+function moveFind(delta: number) {
+  if (!findMatches.length) return;
+  findCurrent = (findCurrent + delta + findMatches.length) % findMatches.length;
+  focusCurrentMatch();
+}
+
+function openPreviewFind() {
+  findBar.style.display = "flex";
+  findInput.focus();
+  findInput.select();
+  if (findInput.value) runPreviewSearch();
+}
+
+function closePreviewFind() {
+  findBar.style.display = "none";
+  clearFindHighlights();
+  findMatches = [];
+  findCurrent = -1;
+}
+
+function refreshPreviewFind() {
+  if (findBar.style.display !== "none") runPreviewSearch();
+}
+
+findInput.addEventListener("input", runPreviewSearch);
+findInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    moveFind(e.shiftKey ? -1 : 1);
+  } else if (e.key === "Escape") {
+    e.preventDefault();
+    closePreviewFind();
+  }
+});
+findNext.addEventListener("click", () => moveFind(1));
+findPrev.addEventListener("click", () => moveFind(-1));
+findClose.addEventListener("click", closePreviewFind);
+
+document.addEventListener("keydown", (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "f" && mode === "preview") {
+    e.preventDefault();
+    openPreviewFind();
+  }
+});
+
 function switchToPreview() {
   if (mode === "preview") return;
   saveScrollPosition();
@@ -211,6 +331,7 @@ function switchToPreview() {
 function switchToSource() {
   if (mode === "source") return;
   saveScrollPosition();
+  closePreviewFind();
   sourceEl.style.display = "block";
   previewEl.style.display = "none";
   mode = "source";
@@ -228,6 +349,11 @@ btnMarkdown.addEventListener("click", switchToSource);
 btnExport.addEventListener("click", () => {
   vscode.postMessage({ type: "export" });
 });
+
+// Honor the configured default mode (markdownToggle.defaultMode).
+if (window.__initialMode === "preview") {
+  switchToPreview();
+}
 
 // --- Editor actions (keyboard shortcuts) ---
 function wrapSelection(marker: string) {
@@ -376,6 +502,8 @@ window.addEventListener("message", (event) => {
       });
       if (mode === "preview") {
         previewEl.innerHTML = md.render(msg.text);
+        renderMermaidDiagrams();
+        refreshPreviewFind();
       }
     }
   }
