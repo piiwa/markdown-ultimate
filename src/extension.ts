@@ -22,6 +22,9 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand("markdownToggle.showSource", () => {
       provider.switchMode("source");
     }),
+    vscode.commands.registerCommand("markdownToggle.export", () => {
+      provider.export();
+    }),
     vscode.commands.registerCommand("markdownToggle.openWith", () => {
       const uri = vscode.window.activeTextEditor?.document.uri;
       if (uri) {
