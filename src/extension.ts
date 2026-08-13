@@ -45,7 +45,7 @@ export function activate(context: vscode.ExtensionContext) {
     ),
 
     // Intercept markdown files opened in the standard text editor
-    // (e.g. by other extensions like Claude Code) and reopen them
+    // (e.g. programmatically by other extensions) and reopen them
     // with the custom editor
     vscode.window.onDidChangeActiveTextEditor((editor) => {
       if (!editor) return;

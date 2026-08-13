@@ -96,7 +96,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **PDF/PNG export: Mermaid diagrams not rendered** — replaced `startOnLoad` with explicit `mermaid.run()` + `waitForFunction` to ensure SVG rendering completes before capture
 - **PDF/PNG export: inconsistent layout** — set `page.setViewport({ width: 1200 })` instead of relying on Puppeteer's 800x600 default
 - **Mermaid CDN: fragile SRI hash** — pinned version to `mermaid@11.4.1` and removed integrity hash that broke on CDN updates
-- **Custom editor not activating from extensions** — markdown files opened programmatically by other extensions (Claude Code, GitLens, etc.) via `showTextDocument()` now automatically reopen with Markdown Ultimate
+- **Custom editor not activating from extensions** — markdown files opened programmatically by other extensions (e.g. GitLens) via `showTextDocument()` now automatically reopen with Markdown Ultimate
 
 ### Changed
 
