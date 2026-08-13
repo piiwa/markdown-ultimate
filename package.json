@@ -2,7 +2,7 @@
   "name": "markdown-ultimate",
   "displayName": "Markdown Ultimate",
   "description": "The ultimate markdown editor for VS Code — toggle source/preview in the same tab, KaTeX math, Mermaid diagrams, emoji, task lists, TOC, and export to HTML/PDF/PNG.",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "packageManager": "pnpm@9.7.0",
   "publisher": "piwa",
   "license": "MIT",
@@ -100,40 +100,54 @@
       {
         "command": "markdownToggle.showPreview",
         "title": "Show Preview",
+        "category": "Markdown Ultimate",
         "icon": "$(open-preview)"
       },
       {
         "command": "markdownToggle.showSource",
         "title": "Show Markdown Source",
+        "category": "Markdown Ultimate",
         "icon": "$(go-to-file)"
       },
       {
+        "command": "markdownToggle.export",
+        "title": "Export…",
+        "category": "Markdown Ultimate"
+      },
+      {
         "command": "markdownToggle.toggleBold",
-        "title": "Markdown: Toggle Bold"
+        "title": "Toggle Bold",
+        "category": "Markdown Ultimate"
       },
       {
         "command": "markdownToggle.toggleItalic",
-        "title": "Markdown: Toggle Italic"
+        "title": "Toggle Italic",
+        "category": "Markdown Ultimate"
       },
       {
         "command": "markdownToggle.toggleStrikethrough",
-        "title": "Markdown: Toggle Strikethrough"
+        "title": "Toggle Strikethrough",
+        "category": "Markdown Ultimate"
       },
       {
         "command": "markdownToggle.headingUp",
-        "title": "Markdown: Increase Heading Level"
+        "title": "Increase Heading Level",
+        "category": "Markdown Ultimate"
       },
       {
         "command": "markdownToggle.headingDown",
-        "title": "Markdown: Decrease Heading Level"
+        "title": "Decrease Heading Level",
+        "category": "Markdown Ultimate"
       },
       {
         "command": "markdownToggle.toggleCheckbox",
-        "title": "Markdown: Toggle Checkbox"
+        "title": "Toggle Checkbox",
+        "category": "Markdown Ultimate"
       },
       {
         "command": "markdownToggle.openWith",
-        "title": "Markdown Ultimate: Open With This Editor"
+        "title": "Open With This Editor",
+        "category": "Markdown Ultimate"
       }
     ],
     "keybindings": [
@@ -189,6 +203,44 @@
           "command": "markdownToggle.showSource",
           "group": "navigation",
           "when": "markdownToggle.active && markdownToggle.mode == preview"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "markdownToggle.showPreview",
+          "when": "markdownToggle.active"
+        },
+        {
+          "command": "markdownToggle.showSource",
+          "when": "markdownToggle.active"
+        },
+        {
+          "command": "markdownToggle.export",
+          "when": "markdownToggle.active"
+        },
+        {
+          "command": "markdownToggle.toggleBold",
+          "when": "markdownToggle.active"
+        },
+        {
+          "command": "markdownToggle.toggleItalic",
+          "when": "markdownToggle.active"
+        },
+        {
+          "command": "markdownToggle.toggleStrikethrough",
+          "when": "markdownToggle.active"
+        },
+        {
+          "command": "markdownToggle.headingUp",
+          "when": "markdownToggle.active"
+        },
+        {
+          "command": "markdownToggle.headingDown",
+          "when": "markdownToggle.active"
+        },
+        {
+          "command": "markdownToggle.toggleCheckbox",
+          "when": "markdownToggle.active"
         }
       ]
     }

@@ -84,12 +84,12 @@ export function getWebviewHtml(
 </head>
 <body>
   <div id="breadcrumb-bar">
-    <div id="toggle-group">
-      <button id="btn-preview" class="toggle-tab${initialMode === "preview" ? " active" : ""}">Preview</button>
-      <button id="btn-markdown" class="toggle-tab${initialMode === "source" ? " active" : ""}">Markdown</button>
+    <div id="toggle-group" role="tablist" aria-label="Editor mode">
+      <button id="btn-preview" class="toggle-tab${initialMode === "preview" ? " active" : ""}" role="tab" aria-selected="${initialMode === "preview" ? "true" : "false"}">Preview</button>
+      <button id="btn-markdown" class="toggle-tab${initialMode === "source" ? " active" : ""}" role="tab" aria-selected="${initialMode === "source" ? "true" : "false"}">Markdown</button>
       <span class="toggle-separator"></span>
-      <button id="btn-export" class="toggle-tab toggle-icon" title="Export">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1L8 10M8 10L5 7M8 10L11 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M3 12L3 14L13 14L13 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+      <button id="btn-export" class="toggle-tab toggle-icon" title="Export" aria-label="Export">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1L8 10M8 10L5 7M8 10L11 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M3 12L3 14L13 14L13 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
       </button>
     </div>
   </div>

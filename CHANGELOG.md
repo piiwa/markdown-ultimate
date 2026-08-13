@@ -4,6 +4,28 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-08-13
+
+### Added
+
+- **Interactive task-list checkboxes** — clicking a checkbox in the preview now
+  toggles the matching `- [ ]` / `- [x]` in the source (checkboxes inside code
+  fences are correctly ignored). Matches what the README always promised.
+- **Export command** — "Markdown Ultimate: Export…" is now available from the
+  Command Palette, not only the in-editor icon.
+
+### Changed
+
+- **Accessibility** — the mode toggle is now a proper ARIA `tablist`/`tab` with
+  `aria-selected`, and the export button has an accessible label.
+- **Command Palette** — all commands share the "Markdown Ultimate" category and
+  only appear when the editor is active (no more stray, context-less entries).
+
+### Fixed
+
+- Backspace now deletes a bracket pair in the source editor (the close-brackets
+  keymap was shadowed by the default keymap).
+
 ## [0.4.1] - 2026-08-13
 
 ### Security

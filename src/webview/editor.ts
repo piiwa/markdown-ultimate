@@ -32,6 +32,7 @@ import texmath from "markdown-it-texmath";
 import katex from "katex";
 import mermaid from "mermaid";
 import { findMatchRanges } from "../findMatches";
+import { toggleTaskCheckbox } from "../taskCheckbox";
 // KaTeX CSS is loaded via webviewContent.ts as a <link> tag
 
 declare function acquireVsCodeApi(): {
@@ -61,7 +62,7 @@ mermaid.initialize({
 // --- markdown-it with plugins ---
 const md = new MarkdownIt({ html: true, linkify: true, typographer: true })
   .use(markdownItEmoji)
-  .use(markdownItTaskLists, { label: true, labelAfter: true })
+  .use(markdownItTaskLists, { enabled: true, label: true, labelAfter: true })
   .use(markdownItAnchor, { permalink: false })
   .use(markdownItTocDoneRight)
   .use(texmath, { engine: katex, delimiters: "dollars" });
@@ -102,11 +103,13 @@ const state = EditorState.create({
     search(),
     history(),
     keymap.of([
+      // closeBracketsKeymap must precede defaultKeymap so Backspace deletes a
+      // bracket pair instead of a single char (CodeMirror: earlier = higher priority).
+      ...closeBracketsKeymap,
       ...defaultKeymap,
       ...historyKeymap,
       ...searchKeymap,
       ...foldKeymap,
-      ...closeBracketsKeymap,
       indentWithTab,
     ]),
     markdown({ base: markdownLanguage, codeLanguages: languages }),
@@ -323,6 +326,8 @@ function switchToPreview() {
   mode = "preview";
   btnPreview.classList.add("active");
   btnMarkdown.classList.remove("active");
+  btnPreview.setAttribute("aria-selected", "true");
+  btnMarkdown.setAttribute("aria-selected", "false");
   vscode.postMessage({ type: "modeChanged", mode: "preview" });
   renderMermaidDiagrams();
   restoreScrollPosition("preview");
@@ -337,6 +342,8 @@ function switchToSource() {
   mode = "source";
   btnMarkdown.classList.add("active");
   btnPreview.classList.remove("active");
+  btnMarkdown.setAttribute("aria-selected", "true");
+  btnPreview.setAttribute("aria-selected", "false");
   vscode.postMessage({ type: "modeChanged", mode: "source" });
   editorView.focus();
   restoreScrollPosition("source");
@@ -354,6 +361,27 @@ btnExport.addEventListener("click", () => {
 if (window.__initialMode === "preview") {
   switchToPreview();
 }
+
+// Interactive task-list checkboxes: clicking one in the preview toggles the
+// matching `- [ ]`/`- [x]` in the source (which then syncs to the document).
+previewEl.addEventListener("change", (e) => {
+  const target = e.target as HTMLElement;
+  if (
+    !(target instanceof HTMLInputElement) ||
+    !target.classList.contains("task-list-item-checkbox")
+  ) {
+    return;
+  }
+  const boxes = Array.from(
+    previewEl.querySelectorAll<HTMLInputElement>("input.task-list-item-checkbox")
+  );
+  const index = boxes.indexOf(target);
+  if (index < 0) return;
+  const next = toggleTaskCheckbox(editorView.state.doc.toString(), index);
+  editorView.dispatch({
+    changes: { from: 0, to: editorView.state.doc.length, insert: next },
+  });
+});
 
 // --- Editor actions (keyboard shortcuts) ---
 function wrapSelection(marker: string) {
