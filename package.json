@@ -275,7 +275,7 @@
     "markdown-it-texmath": "^1.0.0",
     "markdown-it-toc-done-right": "^4.2.0",
     "mermaid": "^11.16.1",
-    "puppeteer-core": "^24.43.1"
+    "puppeteer-core": "^25.5.0"
   },
   "lint-staged": {
     "src/**/*.ts": [
