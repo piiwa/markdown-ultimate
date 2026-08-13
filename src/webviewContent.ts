@@ -1,4 +1,6 @@
 import * as vscode from "vscode";
+import { randomBytes } from "crypto";
+import { escapeInlineScript } from "./webviewBootstrap";
 
 export function getWebviewHtml(
   webview: vscode.Webview,
@@ -8,7 +10,7 @@ export function getWebviewHtml(
   katexCssUri: vscode.Uri
 ): string {
   const nonce = getNonce();
-  const escapedText = JSON.stringify(initialText);
+  const escapedText = escapeInlineScript(initialText);
 
   return /* html */ `<!DOCTYPE html>
 <html lang="en">
@@ -50,10 +52,12 @@ export function getWebviewHtml(
 }
 
 function getNonce(): string {
-  let text = "";
+  // Cryptographically strong nonce — a predictable nonce would weaken the CSP.
   const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  for (let i = 0; i < 32; i++) {
-    text += possible.charAt(Math.floor(Math.random() * possible.length));
+  const bytes = randomBytes(32);
+  let text = "";
+  for (let i = 0; i < bytes.length; i++) {
+    text += possible.charAt(bytes[i] % possible.length);
   }
   return text;
 }
