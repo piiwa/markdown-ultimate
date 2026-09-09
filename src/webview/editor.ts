@@ -1,4 +1,4 @@
-import { EditorState } from "@codemirror/state";
+import { Annotation, EditorState } from "@codemirror/state";
 import {
   EditorView,
   keymap,
@@ -49,6 +49,12 @@ declare global {
 }
 
 const vscode = acquireVsCodeApi();
+
+// Marks document changes that originate from the extension host (disk
+// reloads) so they are NOT echoed back as `edit` messages. Echoing them would
+// make the extension re-apply identical text, which marks the VS Code
+// document dirty and blocks all future auto-reloads of disk changes.
+const externalSync = Annotation.define<boolean>();
 // --- Mermaid setup ---
 const isDark =
   document.body.classList.contains("vscode-dark") ||
@@ -115,7 +121,7 @@ const state = EditorState.create({
     markdown({ base: markdownLanguage, codeLanguages: languages }),
     syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
     EditorView.updateListener.of((update) => {
-      if (update.docChanged) {
+      if (update.docChanged && !update.transactions.some((tr) => tr.annotation(externalSync))) {
         vscode.postMessage({
           type: "edit",
           text: update.state.doc.toString(),
@@ -527,6 +533,7 @@ window.addEventListener("message", (event) => {
           to: currentText.length,
           insert: msg.text,
         },
+        annotations: externalSync.of(true),
       });
       if (mode === "preview") {
         previewEl.innerHTML = md.render(msg.text);

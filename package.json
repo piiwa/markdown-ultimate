@@ -252,6 +252,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:integration": "node test-integration/runTest.mjs",
     "lint": "eslint src/",
     "format": "prettier --write \"src/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\"",
@@ -286,6 +287,7 @@
   "devDependencies": {
     "@types/markdown-it": "^14.1.2",
     "@types/vscode": "~1.85.0",
+    "@vscode/test-electron": "3.1.0",
     "esbuild": "^0.21.5",
     "eslint": "^10.8.1",
     "eslint-config-prettier": "^10.1.8",

@@ -1,7 +1,9 @@
 import * as vscode from "vscode";
+import * as path from "path";
 import { getWebviewHtml } from "./webviewContent";
 import { showExportMenu } from "./exportManager";
 import { normalizeMode } from "./mode";
+import { shouldApplyWebviewEdit } from "./editGuard";
 
 export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
   public static readonly viewType = "markdownToggle.editor";
@@ -29,6 +31,26 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
   public async export() {
     if (this.activeDocument) {
       await showExportMenu(this.activeDocument, this.context.extensionUri);
+    }
+  }
+
+  private async reloadFromDisk(document: vscode.TextDocument): Promise<void> {
+    // `workbench.action.files.revert` acts on the active editor, so focus
+    // ours first (the notification may have been clicked much later).
+    await vscode.commands
+      .executeCommand("vscode.openWith", document.uri, MarkdownEditorProvider.viewType)
+      .then(() => vscode.commands.executeCommand("workbench.action.files.revert"));
+
+    // Some custom-editor setups do not implement revert; fall back to a
+    // manual disk→document sync so the editor is never left half-reloaded.
+    const diskText = Buffer.from(await vscode.workspace.fs.readFile(document.uri)).toString("utf8");
+    if (diskText !== document.getText()) {
+      const edit = new vscode.WorkspaceEdit();
+      edit.replace(document.uri, new vscode.Range(0, 0, document.lineCount, 0), diskText);
+      await vscode.workspace.applyEdit(edit);
+    }
+    if (document.isDirty) {
+      await document.save();
     }
   }
 
@@ -91,6 +113,12 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
 
     const messageDisposable = webviewPanel.webview.onDidReceiveMessage(async (msg) => {
       if (msg.type === "edit") {
+        // Applying a full-document replace whose text is identical to the
+        // document still marks the document dirty in VS Code, which blocks
+        // all future automatic reloads of external disk changes. The webview
+        // annotates disk-reload syncs so they are not echoed back, but guard
+        // here as well in case a message races in with stale text.
+        if (!shouldApplyWebviewEdit(msg.text, document.getText())) return;
         const edit = new vscode.WorkspaceEdit();
         edit.replace(document.uri, new vscode.Range(0, 0, document.lineCount, 0), msg.text);
         isApplyingEdit = true;
@@ -112,9 +140,45 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
       });
     });
 
+    // --- External disk changes while the document is dirty ---
+    // Clean documents are auto-reloaded by VS Code (which fires the listener
+    // above and updates both modes immediately). A dirty document is never
+    // reloaded — unsaved webview edits win — but the editor would then look
+    // silently stale, so offer an explicit reload.
+    let dirtyNotified = false;
+    const onDiskChange = async () => {
+      // Give VS Code a moment to auto-reload a clean model first.
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      if (!document.isDirty || dirtyNotified) return;
+      dirtyNotified = true;
+      const fileName = path.basename(document.uri.fsPath);
+      const choice = await vscode.window.showInformationMessage(
+        `${fileName} changed on disk, but you have unsaved edits.`,
+        "Reload from Disk",
+        "Keep My Changes"
+      );
+      dirtyNotified = false;
+      if (choice === "Reload from Disk") {
+        await this.reloadFromDisk(document);
+      }
+    };
+    const fileWatcher =
+      document.uri.scheme === "file"
+        ? vscode.workspace.createFileSystemWatcher(document.uri.fsPath)
+        : undefined;
+    const watcherDisposables = fileWatcher
+      ? [
+          fileWatcher.onDidChange(onDiskChange),
+          fileWatcher.onDidCreate(onDiskChange),
+          fileWatcher.onDidDelete(onDiskChange),
+        ]
+      : [];
+
     webviewPanel.onDidDispose(() => {
       messageDisposable.dispose();
       changeDisposable.dispose();
+      watcherDisposables.forEach((d) => d.dispose());
+      fileWatcher?.dispose();
       if (this.activePanel === webviewPanel) {
         this.activePanel = undefined;
         vscode.commands.executeCommand("setContext", "markdownToggle.active", false);
