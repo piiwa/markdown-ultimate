@@ -4,6 +4,24 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **Disk changes now appear immediately** — when a markdown file was changed
+  on disk (another editor, script, `git checkout`, …), the first change showed
+  up but every later one silently didn't, in both source and preview mode. The
+  webview was echoing reloaded text back to the document, and VS Code marks a
+  document dirty for *any* applied edit — even one whose text is identical —
+  which permanently blocks auto-reload. Echoes are now suppressed at both
+  ends (CodeMirror annotation + an identity guard before `applyEdit`), so a
+  clean editor reloads from disk instantly and stays clean.
+- **Unsaved edits win over disk changes** — as before, a document with unsaved
+  edits is never silently overwritten; it now also shows a notification with a
+  one-click "Reload from Disk" action instead of just looking stale.
+- Added integration test harness (`pnpm test:integration`) that drives a real
+  VS Code instance through the disk-change scenarios.
+
 ## [0.5.0] - 2026-08-13
 
 ### Added

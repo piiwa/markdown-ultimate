@@ -25,6 +25,7 @@ Unlike VS Code's built-in preview that opens in a **separate tab**, Markdown Ult
 - **Configurable default mode** — Open files straight into Preview or Markdown
 - **Export** — HTML, PDF (via browser or Chrome), PNG
 - **Scroll sync** — Preserves scroll position when toggling between modes
+- **Live disk sync** — External changes to the file (other editors, scripts, `git checkout`) appear immediately in both modes; unsaved edits are never silently overwritten
 - **Theme-aware** — Adapts to your VS Code light/dark theme
 
 ## Installation
